@@ -1,5 +1,7 @@
 const express = require('express');
 
+const db = require('./dbConnectExec.js');
+
 const app = express(); 
 
 
@@ -13,3 +15,15 @@ app.get("/", (req, res)=>{res.send("Api is Running")});
 
 // app.post();
 // app.put();
+
+app.get("/movies",(req, res)=>{
+    //get movies from database
+    db.executeQuery("SELECT * FROM Guide LEFT JOIN Shop ON Shop.ShopPK = Guide.ShopFK")
+    .then((theResults)=>{
+        res.status(200).send(theResults);
+    })
+    .catch((myError)=>{
+        console.log(myError);
+        res.status(500).send();
+    })
+} )
