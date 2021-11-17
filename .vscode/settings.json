@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/402b83a3-f69b-412f-ab33-8c9e8e944f57/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/hyland-warren-api",
+    "appService.deploySubpath": "."
+}

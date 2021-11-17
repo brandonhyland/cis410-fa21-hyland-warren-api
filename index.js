@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('./dbConnectExec.js');
+const cors = require("cors");
 
 const rockwellConfig = require("./config.js");
 
@@ -9,10 +10,14 @@ const auth = require("./middleware/authenticate")
 
 const app = express(); 
 app.use(express.json());
+//azurewebsites.net, colostate.edu
 
+app.use(cors());
+
+const PORT = process.env.PORT || 5000;
 
 //arg 1 = port number, arg 2 is function we want to run
-app.listen(5000, ()=> {console.log(`app is running on port 5000`)});
+app.listen(PORT, ()=> {console.log(`app is running on port ${PORT}`)});
 
 // arg 1 = route/endpoint arg 2 = function we want to run
 app.get("/hi",(req, res)=>{res.send("Hello World")});
