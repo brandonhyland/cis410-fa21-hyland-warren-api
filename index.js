@@ -26,25 +26,42 @@ app.get("/", (req, res)=>{res.send("Api is Running")});
 
 app.post("/booking", auth,async (req, res)=>{
     try{
-        let bookingFK = req.body.bookingFK;
+        
         let tripFK = req.body.tripFK;
-        let actualPrice = req.body.actualPrice; 
+        let guideFK = req.body.guideFK;
+        let customerFK = req.body.customerFK;
+        let actualPersons = req.body.actualPersons; 
 
 
         // not adding Number.isInteger(rating)) as extra field
-        if(!bookingFK || !tripFK || !actualPrice)
+        if(!customerFK || !tripFK || !actualPersons || !guideFK)
         {return res.status(400).send("this is a bad request")};
 
         //getting rid of single qoutes in summary - instead we get rid of $ in actual price
-        actualPrice = actualPrice.replace("$", "$ ");
-        console.log("here is the price of your booking" , actualPrice);
+        // actualPrice = actualPrice.replace("$", "$ ");
+    
+        // console.log("here is the guide", req.guide);
 
-        res.send("Here is the response")
+        let insertQuery = `insert into Booking(TripFK,GuideFK, CustomerFK, ActualPersons)
+        output inserted.BookingPK, inserted.GuideFK, inserted.CustomerFK, inserted.ActualPersons
+        values('${tripFK}', '${guideFK}', '${customerFK}', '${actualPersons}');`;
+
+        let insertedBooking = await db.executeQuery(insertQuery);
+
+        // console.log("inserted booking", insertedBooking);
+
+        // res.send("Here is the response");
+
+        res.status(201).send(insertedBooking[0]);
     }
     catch(error){
         console.log("error in post/reviews", error);
         res.status(500).send();
     }
+})
+
+app.get("/contacts/me", auth,(req, res)=>{
+    res.send(req.guide);
 })
 
 app.post("/contacts/login", async (req, res)=>{
@@ -90,7 +107,7 @@ app.post("/contacts/login", async (req, res)=>{
     //5 save token in DB and send response
 
     let setTokenQuery = `UPDATE Guide
-    SET token = 'this is a token'
+    SET token = '${token}'
     WHERE GuidePK = ${user.GuidePK}`;
 
     try{
