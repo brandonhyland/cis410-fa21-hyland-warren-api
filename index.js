@@ -17,6 +17,45 @@ app.get("/", (req, res)=>{res.send("Api is Running")});
 // app.post();
 // app.put();
 
+app.post("/contacts/login", async (req, res)=>{
+    // console.log("/contacts/login called ", req.body)
+
+    //1. Data validation
+
+    let email = req.body.email;
+    let password = req.body.password;
+
+    if (!email || !password){
+        return res.status(400).send("Bad request")
+    }
+
+    //2. Check that user exists in dataabase
+
+    let query = `SELECT * FROM Guide WHERE email = '${email}'`;
+
+    let result;
+    try {
+    result = await db.executeQuery(query);
+    } catch(myError){
+      console.log("error in /contacts/login", myError)
+      return res.status(500).send();
+    }
+    // console.log("result", result);
+    if(!result[0]){return res.status(401).send("Invalid user credentials");
+    }
+
+    //3. Check password
+
+    let user = result[0];
+
+    if (!bcrypt.compareSync(password, user.Password)) {
+        return res.status(401).send("Invalid user credentials");
+    }
+
+    //4. Generate Token
+
+})             
+
 app.post("/contacts", async (req, res)=>{
     // res.send("/contacts called");
 // console.log("request.body", req.body);
