@@ -1,6 +1,11 @@
 const express = require('express');
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const db = require('./dbConnectExec.js');
+
+const rockwellConfig = require("./config.js");
+
+const auth = require("./middleware/authenticate")
 
 const app = express(); 
 app.use(express.json());
@@ -16,6 +21,31 @@ app.get("/", (req, res)=>{res.send("Api is Running")});
 
 // app.post();
 // app.put();
+
+
+
+app.post("/booking", auth,async (req, res)=>{
+    try{
+        let bookingFK = req.body.bookingFK;
+        let tripFK = req.body.tripFK;
+        let actualPrice = req.body.actualPrice; 
+
+
+        // not adding Number.isInteger(rating)) as extra field
+        if(!bookingFK || !tripFK || !actualPrice)
+        {return res.status(400).send("this is a bad request")};
+
+        //getting rid of single qoutes in summary - instead we get rid of $ in actual price
+        actualPrice = actualPrice.replace("$", "$ ");
+        console.log("here is the price of your booking" , actualPrice);
+
+        res.send("Here is the response")
+    }
+    catch(error){
+        console.log("error in post/reviews", error);
+        res.status(500).send();
+    }
+})
 
 app.post("/contacts/login", async (req, res)=>{
     // console.log("/contacts/login called ", req.body)
@@ -54,6 +84,32 @@ app.post("/contacts/login", async (req, res)=>{
 
     //4. Generate Token
 
+    let token = jwt.sign({pk: user.GuidePK}, rockwellConfig.JWT, {expiresIn: "60 minutes"});
+    console.log("token", token)
+
+    //5 save token in DB and send response
+
+    let setTokenQuery = `UPDATE Guide
+    SET token = 'this is a token'
+    WHERE GuidePK = ${user.GuidePK}`;
+
+    try{
+        await db.executeQuery(setTokenQuery);
+
+        res.status(200).send({
+            token: token,
+            user:{
+                FirstName: user.FirstName,
+                LastName: user.LastName,
+                Email: user.Email,
+                GuidePK: user.GuidePK
+            }
+        })
+    }  
+    catch(myError){
+        console.log("Error in setting user token", myError)
+        res.send(500).send();
+    }    
 })             
 
 app.post("/contacts", async (req, res)=>{
